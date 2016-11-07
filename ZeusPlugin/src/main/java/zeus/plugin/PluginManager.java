@@ -21,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -664,7 +663,9 @@ public class PluginManager {
         return plugin;
     }
 
-
+    /**
+     * 该方式是修改了启动意图，将实际要启动的Activity名称藏到Bundle里
+     */
     public static void startActivity(Activity activity, Intent intent) {
         ComponentName componentName = intent.getComponent();
         intent.setClassName(componentName.getPackageName(), PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);
@@ -672,6 +673,9 @@ public class PluginManager {
         activity.startActivity(intent);
     }
 
+    /**
+     * 该方式是修改了启动意图，将实际要启动的Activity名称藏到Bundle里
+     */
     public static void startActivity(Intent intent) {
         ComponentName componentName = intent.getComponent();
         intent.setClassName(componentName.getPackageName(), PluginConfig.PLUGIN_ACTIVITY_FOR_STANDARD);

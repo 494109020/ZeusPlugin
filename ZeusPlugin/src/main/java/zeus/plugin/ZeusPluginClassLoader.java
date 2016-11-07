@@ -1,7 +1,5 @@
 package zeus.plugin;
 
-import android.text.TextUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.zip.ZipFile;
@@ -28,7 +26,7 @@ class ZeusPluginClassLoader extends ClassLoader {
     final private String mPluginId;
 
     public ZeusPluginClassLoader(String pluginId, String dexPath, String dexOutputDir, String libPath,
-                                    ClassLoader parent) {
+                                 ClassLoader parent) {
 
         super(parent);
         if (dexPath == null || dexOutputDir == null)
@@ -140,17 +138,31 @@ class ZeusPluginClassLoader extends ClassLoader {
         return newStr.toString();
     }
 
+    /**
+     * 这里和父类{@link ClassLoader#loadClass(String, boolean)}
+     * 这个方法实现一致，不懂为毛要重新写一遍
+     * <p>
+     * 注：看看双亲委托机制。
+     *
+     * @param className
+     * @param resolve
+     * @return
+     * @throws ClassNotFoundException
+     */
     protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
+        //检查该类是否已经被加载了
         Class<?> clazz = findLoadedClass(className);
 
         if (clazz == null) {
             try {
+                //先交给父加载器加载
                 clazz = getParent().loadClass(className);
             } catch (ClassNotFoundException e) {
             }
 
             if (clazz == null) {
                 try {
+                    //如果父加载不能处理，再由自己处理
                     clazz = findClass(className);
                 } catch (ClassNotFoundException e) {
                     throw e;
@@ -163,6 +175,7 @@ class ZeusPluginClassLoader extends ClassLoader {
 
     /***
      * 每个插件里也可能有多个dex文件，挨个的查找dex文件
+     * 父类默认实现就是抛了个类找不到异常。
      */
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -200,10 +213,17 @@ class ZeusPluginClassLoader extends ClassLoader {
         return clazz;
     }
 
+    /**
+     * 返回native library的绝对路径，如果返回为null的话，
+     * 虚拟机则会在目录"java.library.path"下进行搜索
+     *
+     * @param libname 包名
+     * @return
+     */
     @Override
     protected String findLibrary(String libname) {//根据插件的pathInfo查找对应的so
         ensureInit();
-
+        //返回格式化的名称   "lib"+"name"+".so"
         String fileName = System.mapLibraryName(libname);
         for (String libPath : mLibPaths) {
             String pathName = libPath + fileName;

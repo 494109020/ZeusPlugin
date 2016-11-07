@@ -7,6 +7,15 @@ import static java.lang.System.arraycopy;
 /***
  * 这是一个空ClassLoader，主要是个容器
  * <p>
+ * 我们通过反射修改系统的ClassLoader为ZeusClassLoader，其内包含多个ZeusPluginClassLoader，
+ * 每一个插件对应一个ZeusPluginClassLoader，当移除插件时则删除一个ZeusPluginClassLoader，
+ * 加载一个插件则添加一个ZeusPluginClassLoader，
+ * ZeusClassLoader的parent为原始APK的ClassLoader，
+ * 而原始APK的ClassLoader的parent为ZeusHotfixClassLoader,
+ * ZeusHotfixClassLoader的parent为系统rom的ClassLoader。
+ * 由之前的代码逻辑可知，查找class是先查找缓存然后找parent，最后找自己。
+ * 所以插件中可以通过new的方式来访问apk的类和系统rom的类。
+ * <p>
  * Created by huangjian on 2016/6/21.
  */
 class ZeusClassLoader extends ClassLoader {
@@ -26,8 +35,8 @@ class ZeusClassLoader extends ClassLoader {
      * 添加一个插件到当前的classLoader中
      *
      * @param pluginId 插件名称
-     * @param dexPath dex文件路径
-     * @param libPath so文件夹路径
+     * @param dexPath  dex文件路径
+     * @param libPath  so文件夹路径
      */
     protected void addAPKPath(String pluginId, String dexPath, String libPath) {
         if (mClassLoader == null) {
